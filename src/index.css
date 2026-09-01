@@ -34,3 +34,15 @@ body {
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn.secondary { background: #eef3f0; color: var(--text); }
 .muted { color: var(--muted); }
+.hero { text-align: center; margin: 32px 0 24px; }
+.hero h1 { font-size: 32px; margin: 0 0 6px; }
+.mode-grid { display: grid; gap: 12px; margin: 16px 0; }
+.mode-card {
+  display: flex; flex-direction: column; gap: 6px;
+  text-align: left; padding: 18px;
+  border: 2px solid #e2ebe6; border-radius: var(--radius);
+  background: #fff; font-size: 16px; cursor: pointer;
+}
+.mode-card:hover:not(:disabled) { border-color: var(--green); }
+.mode-card:disabled { opacity: 0.5; cursor: not-allowed; }
+.privacy { font-size: 13px; line-height: 1.6; }
