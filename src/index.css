@@ -1,0 +1,36 @@
+:root {
+  --green: #4CAF82;
+  --yellow: #E8B33A;
+  --red: #D95F4C;
+  --bg: #F7F9F7;
+  --text: #24352D;
+  --muted: #6B7F75;
+  --card: #ffffff;
+  --radius: 16px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+.app { max-width: 640px; margin: 0 auto; padding: 24px 16px 48px; }
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(36, 53, 45, 0.08);
+}
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 14px 28px;
+  font-size: 16px;
+  cursor: pointer;
+  background: var(--green);
+  color: #fff;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.secondary { background: #eef3f0; color: var(--text); }
+.muted { color: var(--muted); }
