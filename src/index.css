@@ -46,3 +46,36 @@ body {
 .mode-card:hover:not(:disabled) { border-color: var(--green); }
 .mode-card:disabled { opacity: 0.5; cursor: not-allowed; }
 .privacy { font-size: 13px; line-height: 1.6; }
+.monitor { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+.cam-preview {
+  width: 100%; max-width: 360px; border-radius: var(--radius);
+  transform: scaleX(-1); background: #dfe8e3;
+}
+.status-ball {
+  width: 160px; height: 160px; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: #fff; gap: 4px;
+}
+.status-ball.green { background: var(--green); }
+.status-ball.yellow { background: var(--yellow); }
+.status-ball.red { background: var(--red); }
+.status-ball strong { font-size: 40px; }
+.monitor-grid { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.stat { min-width: 120px; text-align: center; display: flex; flex-direction: column; gap: 6px; }
+.stat strong { font-size: 22px; }
+.reminder {
+  position: fixed; left: 50%; top: 24px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 22px; border-radius: 999px;
+  color: #fff; font-size: 15px; z-index: 10;
+  animation: pop 0.3s ease;
+  max-width: 90vw;
+}
+.reminder.yellow { background: var(--yellow); }
+.reminder.red { background: var(--red); }
+.reminder-dot { width: 10px; height: 10px; border-radius: 50%; background: #fff; flex: none; }
+@keyframes pop {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+.warn { background: #fff7e8; color: #8a5a00; border: 1px solid #f0d9a8; }

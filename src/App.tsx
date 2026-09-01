@@ -1,5 +1,6 @@
 import { useSession } from './hooks/useSession';
 import ModeSelector from './components/ModeSelector';
+import MonitorView from './components/MonitorView';
 
 export default function App() {
   const session = useSession();
@@ -16,7 +17,9 @@ export default function App() {
       {session.status === 'idle' && (
         <ModeSelector onSelect={handleSelect} disabled={false} />
       )}
-      {session.status === 'monitoring' && <p>监测中(MonitorView 见 Task 10)</p>}
+      {session.status === 'monitoring' && (
+        <MonitorView session={session} onStop={() => undefined} />
+      )}
       {session.status === 'finished' && <p>结果页(ResultsView 见 Task 11)</p>}
     </main>
   );
