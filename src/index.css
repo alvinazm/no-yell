@@ -98,3 +98,7 @@ body {
   padding: 10px 0; border-bottom: 1px solid #eef2ef;
 }
 .history-item:last-child { border-bottom: none; }
+.interrupted {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  margin-bottom: 16px;
+}

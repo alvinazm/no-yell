@@ -100,6 +100,7 @@ export function useSession(): UseSession {
     tensionBufRef.current = [];
     usedScriptsRef.current = [];
     lastAlertAtRef.current = null;
+    window.sessionStorage.setItem('calm-tutor:active', '1');
     setStatus('monitoring');
     timerRef.current = window.setInterval(() => {
       setDurationSec((s) => s + 1);
@@ -109,6 +110,7 @@ export function useSession(): UseSession {
   const stop = useCallback((): SessionSummary | null => {
     if (timerRef.current !== null) window.clearInterval(timerRef.current);
     timerRef.current = null;
+    window.sessionStorage.removeItem('calm-tutor:active');
     const endedAt = Date.now();
     const secs = startedAt === null ? 0 : Math.round((endedAt - startedAt) / 1000);
     const metrics = calculateScore(
