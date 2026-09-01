@@ -1,6 +1,7 @@
 import { useSession } from './hooks/useSession';
 import ModeSelector from './components/ModeSelector';
 import MonitorView from './components/MonitorView';
+import ResultsView from './components/ResultsView';
 
 export default function App() {
   const session = useSession();
@@ -20,7 +21,9 @@ export default function App() {
       {session.status === 'monitoring' && (
         <MonitorView session={session} onStop={() => undefined} />
       )}
-      {session.status === 'finished' && <p>结果页(ResultsView 见 Task 11)</p>}
+      {session.status === 'finished' && session.summary && (
+        <ResultsView summary={session.summary} onRestart={() => session.start(session.mode)} />
+      )}
     </main>
   );
 }

@@ -79,3 +79,22 @@ body {
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 .warn { background: #fff7e8; color: #8a5a00; border: 1px solid #f0d9a8; }
+.results { display: flex; flex-direction: column; gap: 16px; }
+.score-card { text-align: center; padding: 28px 20px; }
+.score-num { font-size: 64px; font-weight: 700; line-height: 1.1; }
+.grade.good { color: var(--green); }
+.grade.mid { color: var(--yellow); }
+.grade.low { color: var(--red); }
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.metric { display: flex; flex-direction: column; gap: 8px; text-align: center; }
+.metric strong { font-size: 18px; }
+.tip { line-height: 1.7; padding: 0 4px; }
+.actions { display: flex; justify-content: center; }
+.history h3 { margin: 0 0 12px; }
+.history-head { display: flex; justify-content: space-between; align-items: center; }
+.link-btn { border: none; background: none; color: var(--muted); cursor: pointer; text-decoration: underline; }
+.history-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0; border-bottom: 1px solid #eef2ef;
+}
+.history-item:last-child { border-bottom: none; }
