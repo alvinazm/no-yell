@@ -3,12 +3,19 @@ import { findNegativeKeywords } from '../lib/speech';
 
 const SAMPLE_MS = 100;
 const SPIKE_DB = 10;
+const MAX_HISTORY = 600; // 60s * 10Hz
+
+export interface DbSample {
+  t: number;
+  db: number;
+}
 
 export interface UseAudioMonitor {
   currentDb: number;
   avgDb: number;
   spikeCount: number;
   keywordHits: string[];
+  dbHistory: DbSample[];
   supported: boolean;
   error: string | null;
   start(): Promise<void>;
@@ -20,6 +27,7 @@ export function useAudioMonitor(): UseAudioMonitor {
   const [avgDb, setAvgDb] = useState(0);
   const [spikeCount, setSpikeCount] = useState(0);
   const [keywordHits, setKeywordHits] = useState<string[]>([]);
+  const [dbHistory, setDbHistory] = useState<DbSample[]>([]);
   const [supported] = useState(() =>
     typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia
   );
@@ -30,6 +38,7 @@ export function useAudioMonitor(): UseAudioMonitor {
   const timerRef = useRef<number | null>(null);
   const recognizerRef = useRef<SpeechRecognition | null>(null);
   const samplesRef = useRef<number[]>([]);
+  const historyRef = useRef<DbSample[]>([]);
   const prevDbRef = useRef<number>(0);
   const spikeRef = useRef(0);
 
@@ -42,10 +51,15 @@ export function useAudioMonitor(): UseAudioMonitor {
     streamRef.current = null;
     ctxRef.current?.close().catch(() => undefined);
     ctxRef.current = null;
+    historyRef.current = [];
+    setDbHistory([]);
   }, []);
 
   const start = useCallback(async () => {
     setError(null);
+    samplesRef.current = [];
+    historyRef.current = [];
+    setDbHistory([]);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
@@ -75,6 +89,12 @@ export function useAudioMonitor(): UseAudioMonitor {
         samplesRef.current.push(db);
         if (samplesRef.current.length > 600) samplesRef.current.shift();
         setAvgDb(samplesRef.current.reduce((a, b) => a + b, 0) / samplesRef.current.length);
+
+        const next = historyRef.current.concat({ t: Date.now(), db });
+        if (next.length > MAX_HISTORY) next.splice(0, next.length - MAX_HISTORY);
+        historyRef.current = next;
+        setDbHistory(next);
+
         if (db - prevDbRef.current >= SPIKE_DB) {
           spikeRef.current += 1;
           setSpikeCount(spikeRef.current);
@@ -115,5 +135,5 @@ export function useAudioMonitor(): UseAudioMonitor {
 
   useEffect(() => stop, [stop]);
 
-  return { currentDb, avgDb, spikeCount, keywordHits, supported, error, start, stop };
+  return { currentDb, avgDb, spikeCount, keywordHits, dbHistory, supported, error, start, stop };
 }
