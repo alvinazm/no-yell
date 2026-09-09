@@ -29,7 +29,7 @@ const MODES: {
   },
   {
     mode: 'both',
-    title: '声音 + 表情',
+    title: '麦克风 + 摄像头',
     desc: '声音与表情综合判断，识别最准',
     Icon: AudioLines,
     gradient: 'from-violet-400 to-fuchsia-500'
@@ -39,15 +39,9 @@ const MODES: {
 export default function ModeSelector({ onSelect, error }: Props) {
   return (
     <div className="w-full flex flex-col items-center">
-      <div className="text-center mb-5">
-        <h2 className="text-[20px] font-bold text-[#1e293b] tracking-tight">
-          选择监测模式
-        </h2>
-        <p className="text-[13px] text-slate-500 mt-1.5 leading-relaxed">
-          选择最适合本次辅导场景的方式开始监测
-        </p>
-      </div>
-
+      <h2 className="self-start text-[15px] font-semibold text-slate-700 tracking-tight mb-3">
+        选择监测模式
+      </h2>
       <div className="w-full space-y-3">
         {MODES.map(({ mode, title, desc, Icon, gradient }) => (
           <button

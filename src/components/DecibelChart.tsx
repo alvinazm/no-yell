@@ -6,7 +6,7 @@ interface Props {
 
 const WIDTH = 480;
 const HEIGHT = 140;
-const PAD_X = 28;
+const PAD_X = 36;
 const PAD_Y = 16;
 const PLOT_W = WIDTH - PAD_X * 2;
 const PLOT_H = HEIGHT - PAD_Y * 2;
@@ -53,7 +53,7 @@ export default function DecibelChart({ history }: Props) {
     : '';
 
   return (
-    <div className="w-full bg-white rounded-[20px] p-4 shadow-[0_4px_20px_-8px_rgba(0,0,0,0.08)] border border-slate-100/80">
+    <div className="w-full bg-white rounded-[20px] px-4 py-5 shadow-[0_4px_20px_-8px_rgba(0,0,0,0.06)] border border-slate-100/80">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[13px] font-medium text-slate-500 tracking-tight">
           最近 60 秒分贝
@@ -81,7 +81,7 @@ export default function DecibelChart({ history }: Props) {
               strokeWidth={1}
             />
             <text
-              x={PAD_X - 6}
+              x={PAD_X - 8}
               y={dbToY(ref.db)}
               fontSize={9}
               fill={ref.color}

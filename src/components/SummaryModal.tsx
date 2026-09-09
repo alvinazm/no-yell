@@ -1,10 +1,10 @@
 import React from 'react';
-import { Award, CheckCircle2, RotateCcw, X } from 'lucide-react';
+import { Award, CheckCircle2, Home } from 'lucide-react';
 
 interface SummaryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onRestart: () => void;
+  onBackHome: () => void;
   durationSeconds: number;
   averageDecibel: number;
   interventionCount: number;
@@ -13,7 +13,7 @@ interface SummaryModalProps {
 export const SummaryModal: React.FC<SummaryModalProps> = ({
   isOpen,
   onClose,
-  onRestart,
+  onBackHome,
   durationSeconds,
   averageDecibel,
   interventionCount,
@@ -35,15 +35,6 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
         className="bg-white rounded-[28px] p-6 max-w-sm w-full shadow-2xl border border-slate-100 relative text-left"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-5 right-5 p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
         {/* Header Icon & Title */}
         <div className="flex flex-col items-center text-center mt-2 mb-5">
           <div className="w-14 h-14 bg-emerald-50 text-[#2fa599] rounded-2xl flex items-center justify-center mb-3 shadow-inner">
@@ -86,23 +77,14 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={onRestart}
-            className="flex-1 py-3 px-4 bg-[#2fa599] hover:bg-[#288b81] active:opacity-95 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20"
-          >
-            <RotateCcw className="w-4 h-4" />
-            开始新辅导
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="py-3 px-5 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-medium rounded-xl text-sm"
-          >
-            关闭
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={onBackHome}
+          className="w-full py-3 px-4 bg-[#2fa599] hover:bg-[#288b81] active:opacity-95 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20"
+        >
+          <Home className="w-4 h-4" />
+          返回首页
+        </button>
       </div>
     </div>
   );

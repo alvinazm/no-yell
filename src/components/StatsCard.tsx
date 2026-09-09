@@ -22,7 +22,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   return (
     <div
       id="stats-summary-card"
-      className="w-full bg-white rounded-[22px] px-3 py-4.5 shadow-[0_4px_20px_-6px_rgba(0,0,0,0.05)] border border-slate-100/90"
+      className="w-full bg-white rounded-[20px] px-4 py-5 shadow-[0_4px_20px_-8px_rgba(0,0,0,0.06)] border border-slate-100/80"
     >
       <div className="grid grid-cols-3 divide-x divide-slate-100 items-center text-center">
         {/* Column 1: 辅导时长 */}
@@ -41,7 +41,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
             平均分贝
           </span>
           <span className="text-[26px] font-bold text-[#e5933a] tracking-tight">
-            {averageDecibel} <span className="text-[20px] font-semibold font-sans">dB</span>
+            {averageDecibel} <span className="text-[16px] font-medium text-slate-400 tracking-tight">dB</span>
           </span>
         </div>
 
@@ -51,7 +51,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
             干预次数
           </span>
           <span className="text-[26px] font-bold text-[#e05e5e] tracking-tight">
-            {interventionCount} <span className="text-[20px] font-semibold font-sans">次</span>
+            {interventionCount} <span className="text-[16px] font-medium text-slate-400 tracking-tight">次</span>
           </span>
         </div>
       </div>

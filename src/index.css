@@ -9,18 +9,10 @@
   --color-coral: #e05e5e;
 }
 
-html, body, #root {
-  height: 100%;
-}
-
 body {
   font-family: -apple-system, "PingFang SC", "Microsoft YaHei", BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
-}
-
-#root {
-  display: flex;
-  flex-direction: column;
+  min-height: 100vh;
 }
 
 button {

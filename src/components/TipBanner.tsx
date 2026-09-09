@@ -4,7 +4,7 @@ export const TipBanner: React.FC = () => {
   return (
     <div
       id="coaching-tip-box"
-      className="w-full bg-[#fefbe8] border border-[#fef08a]/80 rounded-[20px] p-4 flex items-start gap-3 shadow-[0_2px_10px_-4px_rgba(245,158,11,0.08)]"
+      className="w-full bg-amber-50/80 border border-amber-200/60 rounded-[20px] p-4 flex items-start gap-3 shadow-[0_2px_12px_-6px_rgba(217,119,6,0.06)] backdrop-blur-[2px]"
     >
       {/* Cartoon Girl Mini Avatar */}
       <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-amber-200/90 shadow-xs bg-amber-50 mt-0.5">

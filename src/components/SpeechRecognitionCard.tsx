@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageCircle, HelpCircle, X } from 'lucide-react';
+import { MessageCircle, HelpCircle, X, Crown } from 'lucide-react';
 
 interface SpeechRecognitionCardProps {
   negativeSpeechDetected?: boolean;
@@ -14,7 +14,7 @@ export const SpeechRecognitionCard: React.FC<SpeechRecognitionCardProps> = ({
     <>
       <div
         id="negative-language-card"
-        className="w-full bg-white rounded-[22px] p-5 shadow-[0_4px_20px_-6px_rgba(0,0,0,0.05)] border border-slate-100/90 relative overflow-hidden"
+        className="w-full bg-white rounded-[20px] px-4 py-5 shadow-[0_4px_20px_-8px_rgba(0,0,0,0.06)] border border-slate-100/80 relative overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
@@ -29,9 +29,10 @@ export const SpeechRecognitionCard: React.FC<SpeechRecognitionCardProps> = ({
               负面语言识别
             </h2>
 
-            {/* Crown icon */}
-            <span className="text-[16px] leading-none select-none drop-shadow-xs" title="VIP高级监测功能">
-              👑
+            {/* VIP icon */}
+            <span className="inline-flex items-center gap-1 pl-1.5 pr-2 py-0.5 rounded-full bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-700 text-[10px] font-semibold tracking-wide border border-amber-200/70" title="VIP高级监测功能">
+              <Crown className="w-3 h-3 stroke-[2.2]" />
+              VIP
             </span>
           </div>
 

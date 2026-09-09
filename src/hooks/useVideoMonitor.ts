@@ -31,10 +31,12 @@ export function useVideoMonitor(): UseVideoMonitor {
   const streamRef = useRef<MediaStream | null>(null);
   const landmarkerRef = useRef<FaceLandmarker | null>(null);
   const rafRef = useRef<number | null>(null);
+  const sessionIdRef = useRef(0);
   const lastNoseRef = useRef<{ x: number; y: number } | null>(null);
   const lastVideoTimeRef = useRef(-1);
 
   const stop = useCallback(() => {
+    sessionIdRef.current += 1;
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -45,20 +47,38 @@ export function useVideoMonitor(): UseVideoMonitor {
 
   const start = useCallback(async (video: HTMLVideoElement) => {
     setError(null);
+    const sessionId = ++sessionIdRef.current;
+
+    // 阶段 1：只负责打开摄像头并显示画面。任何失败都直接抛给调用方，
+    // 由界面层提示权限/设备错误，不在这里伪装成模型降级。
+    let stream: MediaStream;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      stream = await navigator.mediaDevices.getUserMedia({
         video: { width: 640, height: 480 }
       });
       streamRef.current = stream;
       video.srcObject = stream;
       await video.play();
+    } catch (err) {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      throw err;
+    }
 
+    // 阶段 2：异步加载表情分析模型。失败只降级为“无表情分析”，
+    // 不影响已经打开的摄像头画面，也不向外抛错。
+    try {
       const vision = await FilesetResolver.forVisionTasks(WASM_URL);
       const landmarker = await FaceLandmarker.createFromOptions(vision, {
         baseOptions: { modelAssetPath: MODEL_URL, delegate: 'GPU' },
         runningMode: 'VIDEO',
         numFaces: 1
       });
+
+      if (sessionIdRef.current !== sessionId) {
+        landmarker.close();
+        return;
+      }
       landmarkerRef.current = landmarker;
 
       const tick = () => {
@@ -97,8 +117,9 @@ export function useVideoMonitor(): UseVideoMonitor {
       };
       rafRef.current = requestAnimationFrame(tick);
     } catch {
-      setError('摄像头不可用或模型加载失败,已降级为仅音频');
-      throw new Error('camera or model unavailable');
+      if (sessionIdRef.current === sessionId) {
+        setError('表情分析模型加载失败，情绪分析已降级');
+      }
     }
   }, []);
 

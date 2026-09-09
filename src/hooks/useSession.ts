@@ -5,9 +5,8 @@ import type {
 } from '../types';
 import {
   calculateAudioTension, calculateVideoTension, fuseTensions,
-  smooth, levelForTension, canAlert, RED_THRESHOLD
+  smooth, levelForTension, RED_THRESHOLD
 } from '../lib/emotionEngine';
-import { pickScript } from '../lib/speech';
 import { calculateScore, summaryFromMetrics } from '../lib/scoring';
 import { sessionStore } from '../lib/storage';
 
@@ -24,9 +23,13 @@ export interface UseSession {
   videoAnomalyCount: number;
   alertCount: number;
   summary: SessionSummary | null;
+  avgDb: number | null;
   start(mode: MonitorMode): Promise<void>;
   stop(): SessionSummary | null;
+  pause(): void;
+  resume(): void;
   dismissAlert(): void;
+  recordIntervention(): void;
   ingestAudio(metrics: AudioMetrics): void;
   ingestVideo(features: VideoFeatures): void;
 }
@@ -44,12 +47,15 @@ export function useSession(): UseSession {
   const [videoAnomalyCount, setVideoAnomalyCount] = useState(0);
   const [alertCount, setAlertCount] = useState(0);
   const [summary, setSummary] = useState<SessionSummary | null>(null);
+  const [avgDb, setAvgDb] = useState<number | null>(null);
 
   const timerRef = useRef<number | null>(null);
-  const lastAlertAtRef = useRef<number | null>(null);
-  const usedScriptsRef = useRef<string[]>([]);
+  const activeMsRef = useRef(0);
+  const segmentStartRef = useRef<number | null>(null);
   const tensionBufRef = useRef<number[]>([]);
   const avgDbRef = useRef<number | null>(null);
+  const avgDbSumRef = useRef(0);
+  const avgDbCountRef = useRef(0);
   const spikeRef = useRef(0);
   const audioTensionRef = useRef<number | null>(null);
   const videoTensionRef = useRef<number | null>(null);
@@ -57,7 +63,11 @@ export function useSession(): UseSession {
   const anomalyActiveRef = useRef(false);
 
   const ingestAudio = useCallback((metrics: AudioMetrics) => {
-    avgDbRef.current = metrics.avgDb;
+    avgDbSumRef.current += metrics.currentDb;
+    avgDbCountRef.current += 1;
+    const sessionAvg = avgDbSumRef.current / avgDbCountRef.current;
+    avgDbRef.current = sessionAvg;
+    setAvgDb(sessionAvg);
     spikeRef.current = metrics.spikeCount;
     audioTensionRef.current = calculateAudioTension(
       metrics.currentDb,
@@ -82,7 +92,25 @@ export function useSession(): UseSession {
 
   const dismissAlert = useCallback(() => setCurrentAlert(null), []);
 
+  const recordIntervention = useCallback(() => {
+    setRedAlerts((n) => n + 1);
+    setAlertCount((n) => n + 1);
+  }, []);
+
+  const syncDuration = useCallback(() => {
+    const runningMs =
+      segmentStartRef.current === null ? 0 : Date.now() - segmentStartRef.current;
+    setDurationSec(Math.floor((activeMsRef.current + runningMs) / 1000));
+  }, []);
+
+  const startTimer = useCallback(() => {
+    if (timerRef.current !== null) return;
+    timerRef.current = window.setInterval(syncDuration, 1000);
+  }, [syncDuration]);
+
   const start = useCallback(async (m: MonitorMode) => {
+    if (timerRef.current !== null) window.clearInterval(timerRef.current);
+    timerRef.current = null;
     setMode(m);
     setStartedAt(Date.now());
     setDurationSec(0);
@@ -94,25 +122,31 @@ export function useSession(): UseSession {
     setTension(0);
     setLevel('green');
     avgDbRef.current = null;
+    avgDbSumRef.current = 0;
+    avgDbCountRef.current = 0;
+    setAvgDb(null);
     spikeRef.current = 0;
     anomalyRef.current = 0;
     anomalyActiveRef.current = false;
     tensionBufRef.current = [];
-    usedScriptsRef.current = [];
-    lastAlertAtRef.current = null;
     window.sessionStorage.setItem('calm-tutor:active', '1');
     setStatus('monitoring');
-    timerRef.current = window.setInterval(() => {
-      setDurationSec((s) => s + 1);
-    }, 1000);
+    activeMsRef.current = 0;
+    segmentStartRef.current = Date.now();
+    startTimer();
   }, []);
 
   const stop = useCallback((): SessionSummary | null => {
     if (timerRef.current !== null) window.clearInterval(timerRef.current);
     timerRef.current = null;
+    if (segmentStartRef.current !== null) {
+      activeMsRef.current += Date.now() - segmentStartRef.current;
+      segmentStartRef.current = null;
+    }
     window.sessionStorage.removeItem('calm-tutor:active');
     const endedAt = Date.now();
-    const secs = startedAt === null ? 0 : Math.round((endedAt - startedAt) / 1000);
+    const secs = Math.max(0, Math.round(activeMsRef.current / 1000));
+    setDurationSec(secs);
     const metrics = calculateScore(
       {
         yellowAlerts,
@@ -135,6 +169,22 @@ export function useSession(): UseSession {
     return s;
   }, [startedAt, mode, yellowAlerts, redAlerts]);
 
+  const pause = useCallback(() => {
+    if (timerRef.current !== null) window.clearInterval(timerRef.current);
+    timerRef.current = null;
+    if (segmentStartRef.current !== null) {
+      activeMsRef.current += Date.now() - segmentStartRef.current;
+      segmentStartRef.current = null;
+    }
+    syncDuration();
+  }, [syncDuration]);
+
+  const resume = useCallback(() => {
+    if (timerRef.current !== null) return;
+    segmentStartRef.current = Date.now();
+    startTimer();
+  }, [startTimer]);
+
   useEffect(() => {
     if (status !== 'monitoring') return;
     const id = window.setInterval(() => {
@@ -148,25 +198,10 @@ export function useSession(): UseSession {
     return () => window.clearInterval(id);
   }, [status]);
 
-  useEffect(() => {
-    if (level === 'green' || status !== 'monitoring') return;
-    const now = Date.now();
-    if (!canAlert(level, lastAlertAtRef.current, now)) return;
-    lastAlertAtRef.current = now;
-    if (level === 'yellow') {
-      setYellowAlerts((n) => n + 1);
-    } else {
-      setRedAlerts((n) => n + 1);
-    }
-    setAlertCount((n) => n + 1);
-    const script = pickScript(level, usedScriptsRef.current);
-    usedScriptsRef.current.push(script);
-    setCurrentAlert(script);
-  }, [level, status]);
-
   return {
     status, mode, startedAt, durationSec, tension, level, currentAlert,
-    yellowAlerts, redAlerts, videoAnomalyCount, alertCount, summary,
-    start, stop, dismissAlert, ingestAudio, ingestVideo
+    yellowAlerts, redAlerts, videoAnomalyCount, alertCount, summary, avgDb,
+    start, stop, pause, resume, dismissAlert, recordIntervention,
+    ingestAudio, ingestVideo
   };
 }
