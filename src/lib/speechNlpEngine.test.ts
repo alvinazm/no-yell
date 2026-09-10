@@ -12,6 +12,11 @@ describe('speechNlpEngine', () => {
     const res2 = analyzeSpeechContent('蠢的更猪一样，这都不会', 70);
     expect(res2.hasNegative).toBe(true);
     expect(res2.category).toBe('intellectual_belittling');
+
+    const res3 = analyzeSpeechContent('你怎么这些笨', 60);
+    expect(res3.hasNegative).toBe(true);
+    expect(res3.category).toBe('intellectual_belittling');
+    expect(res3.matchedPhrases).toContain('怎么这些笨');
   });
 
   it('detects toxic comparison', () => {

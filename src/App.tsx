@@ -11,7 +11,6 @@ import DecibelChart from './components/DecibelChart';
 import { StatsCard } from './components/StatsCard';
 import { TipBanner } from './components/TipBanner';
 import { SpeechRecognitionCard } from './components/SpeechRecognitionCard';
-import { EmotionInterventionBanner } from './components/EmotionInterventionBanner';
 import { ActionControls } from './components/ActionControls';
 import { SummaryModal } from './components/SummaryModal';
 import ModeSelector from './components/ModeSelector';
@@ -28,11 +27,13 @@ export default function App() {
   // Python FastAPI 后端实时情绪监控引擎
   const pythonMonitor = usePythonEmotionMonitor(started && !paused);
 
+  const currentDbRef = useRef(0);
   const handleSpeech = useCallback((text: string, isFinal: boolean) => {
-    pythonMonitor.analyzeSpeech(text, audio.currentDb, isFinal);
+    pythonMonitor.analyzeSpeech(text, currentDbRef.current, isFinal);
   }, [pythonMonitor]);
 
   const audio = useAudioMonitor(handleSpeech);
+  currentDbRef.current = audio.currentDb;
   const video = useVideoMonitor();
   const startVideoMonitor = video.start;
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -129,15 +130,6 @@ export default function App() {
     setPermError(null);
     setStarted(false);
   };
-
-  // 综合声学尖峰与语音语义判定负面情绪
-  useEffect(() => {
-    if (pythonMonitor.activeAlert?.hasNegative || audio.currentDb >= 80 || session.level === 'red') {
-      setNegativeSpeech(true);
-    } else {
-      setNegativeSpeech(false);
-    }
-  }, [pythonMonitor.activeAlert, audio.currentDb, session.level]);
 
   const avgDb = Math.round(session.summary?.avgDb ?? session.avgDb ?? audio.avgDb);
 
@@ -236,26 +228,26 @@ export default function App() {
               interventionCount={session.alertCount}
             />
 
-            {/* Python 后端实时负面语言预警与平和替代建议条幅 */}
-            {pythonMonitor.activeAlert?.hasNegative && (
-              <EmotionInterventionBanner
-                alert={pythonMonitor.activeAlert}
-                onDismiss={pythonMonitor.dismissAlert}
-              />
-            )}
-
-            <section aria-label="分贝曲线图">
-              <DecibelChart history={audio.dbHistory} />
-            </section>
-            <TipBanner />
+            {/* 负面语言实时分析卡片（整合实时转写、敏感词识别、平替建议与语音示范） */}
             <SpeechRecognitionCard
               negativeSpeechDetected={negativeSpeech}
               backendConnected={pythonMonitor.connectionStatus === 'connected'}
               activeAlert={pythonMonitor.activeAlert}
+              lastTranscript={audio.lastTranscript}
+              currentDb={audio.currentDb}
+              asrStatus={audio.asrStatus}
+              onDismissAlert={pythonMonitor.dismissAlert}
               onSimulate={(phrase) => {
                 pythonMonitor.analyzeSpeech(phrase, audio.currentDb > 0 ? audio.currentDb : 76, true);
               }}
             />
+
+            {/* 分贝历史曲线走势图 */}
+            <section aria-label="分贝曲线图">
+              <DecibelChart history={audio.dbHistory} />
+            </section>
+
+            <TipBanner />
           </main>
         </div>
 

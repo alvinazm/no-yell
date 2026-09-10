@@ -64,6 +64,8 @@ vi.mock('./hooks/useAudioMonitor', () => ({
     running: false,
     supported: true,
     error: null,
+    lastTranscript: '',
+    asrStatus: 'listening' as const,
     start: mocks.audioStart,
     stop: mocks.audioStop
   })

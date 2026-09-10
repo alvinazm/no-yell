@@ -33,7 +33,8 @@ export function usePythonEmotionMonitor(enabled: boolean = true) {
 
     const result = analyzeSpeechContent(text, currentDb);
 
-    if (result.hasNegative || result.level !== 'green') {
+    // 只有真实匹配到负面言辞时才触发警报，避免环境噪音误报
+    if (result.hasNegative && result.matchedPhrases.length > 0) {
       const alertData: EmotionAlert = {
         hasNegative: result.hasNegative,
         level: result.level,
