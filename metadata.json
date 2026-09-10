@@ -1,0 +1,11 @@
+{
+  "name": "和颜悦色",
+  "description": "AI 家长情绪监测助手 · 辅导作业分贝与情绪实时监测",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

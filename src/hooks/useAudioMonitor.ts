@@ -18,16 +18,18 @@ export interface UseAudioMonitor {
   dbHistory: DbSample[];
   supported: boolean;
   error: string | null;
+  lastTranscript?: string;
   start(): Promise<void>;
   stop(): void;
 }
 
-export function useAudioMonitor(): UseAudioMonitor {
+export function useAudioMonitor(onSpeech?: (text: string, isFinal: boolean) => void): UseAudioMonitor {
   const [currentDb, setCurrentDb] = useState(0);
   const [avgDb, setAvgDb] = useState(0);
   const [spikeCount, setSpikeCount] = useState(0);
   const [keywordHits, setKeywordHits] = useState<string[]>([]);
   const [dbHistory, setDbHistory] = useState<DbSample[]>([]);
+  const [lastTranscript, setLastTranscript] = useState<string>('');
   const [supported] = useState(() =>
     typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia
   );
@@ -41,6 +43,8 @@ export function useAudioMonitor(): UseAudioMonitor {
   const historyRef = useRef<DbSample[]>([]);
   const prevDbRef = useRef<number>(0);
   const spikeRef = useRef(0);
+  const onSpeechRef = useRef(onSpeech);
+  onSpeechRef.current = onSpeech;
 
   const stop = useCallback(() => {
     if (timerRef.current !== null) window.clearInterval(timerRef.current);
@@ -112,14 +116,28 @@ export function useAudioMonitor(): UseAudioMonitor {
         const rec = new RecognitionCtor();
         rec.lang = 'zh-CN';
         rec.continuous = true;
-        rec.interimResults = false;
+        rec.interimResults = true;
         rec.onresult = (ev) => {
-          let text = '';
-          for (let i = 0; i < ev.results.length; i++) {
-            if (ev.results[i].isFinal) text += ev.results[i][0].transcript;
+          let finalText = '';
+          let interimText = '';
+          const startIndex = (ev as { resultIndex?: number }).resultIndex ?? 0;
+          for (let i = startIndex; i < ev.results.length; i++) {
+            const transcript = ev.results[i][0].transcript;
+            if (ev.results[i].isFinal) {
+              finalText += transcript;
+            } else {
+              interimText += transcript;
+            }
           }
-          if (text) {
-            const hits = findNegativeKeywords(text);
+
+          const currentText = (finalText || interimText).trim();
+          if (currentText) {
+            setLastTranscript(currentText);
+            const isFinal = Boolean(finalText);
+            if (onSpeechRef.current) {
+              onSpeechRef.current(currentText, isFinal);
+            }
+            const hits = findNegativeKeywords(currentText);
             if (hits.length > 0) setKeywordHits((prev) => [...new Set([...prev, ...hits])]);
           }
         };
@@ -135,5 +153,5 @@ export function useAudioMonitor(): UseAudioMonitor {
 
   useEffect(() => stop, [stop]);
 
-  return { currentDb, avgDb, spikeCount, keywordHits, dbHistory, supported, error, start, stop };
+  return { currentDb, avgDb, spikeCount, keywordHits, dbHistory, supported, error, lastTranscript, start, stop };
 }
